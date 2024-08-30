@@ -15,13 +15,14 @@ class Player(pygame.sprite.Sprite):
 
         # Player State
         self._status = [name, level, hp_current, hp_max]
+        self._started = False
         self.speed = 3
         self._damage_taken = False
 
         # Player Modes and Selection
         self._player_state = {
             "current_mode" : "normal",
-            "mode_selection_index" : 1,
+            "mode_selection_index" : 0,
             "menu_selection_index" : 0,
             "item_selection_index" : 0,
             "is_selected_item" : False,
@@ -61,9 +62,16 @@ class Player(pygame.sprite.Sprite):
     def get_user_input(self):
         keys = pygame.key.get_pressed()
 
+        if self._started == False:
+            self.switch_mode()
+            self._started = True
+            self.change_index(0)
+
         if self._player_state["is_selected_item"]:
             self.handle_item_selection(keys)
+        
         elif self._player_state["current_mode"] == "selection":
+            
             self.handle_selection_mode(keys)
         else:
             self.handle_movement(keys)
@@ -126,10 +134,9 @@ class Player(pygame.sprite.Sprite):
                 if self._player_state["item_selection_index"] < items_amount-1:
                     self._player_state["item_selection_index"] += 1
 
-        self.set_position_menu()
+        self.change_index(type_mode=1)
 
         if keys[pygame.K_ESCAPE] and self.wait(0.25):
-            # self.game_instance.reset_menu()
             self._player_state["item_selection_index"] = 0
             self._player_state["is_selected_item"] = False
             self.wait(0.1, self.change_index(0))
@@ -138,11 +145,12 @@ class Player(pygame.sprite.Sprite):
     def handle_selection_mode(self, keys):
         if keys[pygame.K_SPACE] and self.wait(0.25):
             self.game_instance.sound.play_sound("select")
-            self.set_position_menu()
+            self.change_index(type_mode=1)
             self._player_state["is_selected_item"] = True
 
         if keys[pygame.K_RIGHT] and self.wait(0.25): self.change_index(1)
         if keys[pygame.K_LEFT] and self.wait(0.25): self.change_index(-1)
+        
 
     # ตอน Movement (State : Normal หรือ Blue)
     def handle_movement(self, keys):
@@ -182,9 +190,9 @@ class Player(pygame.sprite.Sprite):
         self.target_x = x
         self.target_y = y
     
-    def switch_mode(self, set=None):
+    def switch_mode(self, value=0):
         modes = ['normal', 'gravity', 'selection']
-        self._player_state["mode_selection_index"] = (self._player_state["mode_selection_index"] + 1) % len(modes)
+        self._player_state["mode_selection_index"] = (self._player_state["mode_selection_index"] + value) % len(modes)
         self._player_state["current_mode"] = modes[self._player_state["mode_selection_index"]]
         
 
@@ -202,13 +210,10 @@ class Player(pygame.sprite.Sprite):
             if not self._player_state["is_selected_item"]:
                 self.move(87.5 + (172 * self._player_state["menu_selection_index"]), 529)
         else:
-            pass
-
-    def set_position_menu(self):
-        current_menu = self.game_instance.UI_info["items_menus"][self._player_state["menu_selection_index"]]
-        
-        rect = current_menu[self._player_state["item_selection_index"]][1]
-        self.move(rect.x - 4 , 7 + rect.y)
+            current_menu = self.game_instance.UI_info["items_menus"][self._player_state["menu_selection_index"]]
+            rect = current_menu[self._player_state["item_selection_index"]][1]
+            self.move(rect.x - 4 , 7 + rect.y)
+       
     
     # Other Method
     def load_player_image(self):
@@ -223,6 +228,22 @@ class Player(pygame.sprite.Sprite):
     def set_initial_position(self):
         # ตั้งค่าตำแหน่งเริ่มต้นของตัวละครผู้เล่น
         self.rect = self.image.get_rect(midbottom=(self.screen_width // 2, self.screen_height // 1.5))
+
+    def take_damage(self, damage=0):
+        if not self._damage_taken:
+            # ลด HP หรือจัดการความเสียหายที่ได้รับ
+            self._damage_taken = True
+            print(True)
+            # ตั้งเวลาเพื่อเปลี่ยน `_damage_taken` กลับเป็น False หลังจาก 2 วินาที
+            pygame.time.set_timer(pygame.USEREVENT + 1, 2000)
+
+    def handle_event(self, event):
+        # ตรวจสอบเหตุการณ์เมื่อครบเวลา 2 วินาที
+        if event.type == pygame.USEREVENT + 1:
+            self._damage_taken = False
+            print(False)
+            # หยุดตัวจับเวลาหลังจากที่มันถูกใช้งาน
+            pygame.time.set_timer(pygame.USEREVENT + 1, 0)
 
     def info(self):
         return {

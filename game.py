@@ -61,7 +61,8 @@ class Game:
         if gameObject.check_collision(self.player):
             self.player.take_damage()
 
-
+    def handle_event(self, event):
+        self.player.handle_event(event)
 
 
     # Getter , Setter

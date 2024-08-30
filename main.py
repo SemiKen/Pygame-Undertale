@@ -29,9 +29,11 @@ def update_game(dt):
 
 def handle_events():
     for event in pygame.event.get():
+        game.handle_event(event)
         if event.type == pygame.QUIT:
             game.running = False
             pygame.quit()
+            
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = event.pos
             game.UI.update_mouse_position(mouse_x, mouse_y)
