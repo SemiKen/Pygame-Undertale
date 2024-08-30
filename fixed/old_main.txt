@@ -1,0 +1,58 @@
+import pygame
+from game import Game
+import os
+
+pygame.init()
+
+
+# ประกาศตัวแปร
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+FPS = 120
+
+# Setting window หน้าจอ
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Sakuya Battle - Undertale")
+icon = pygame.image.load("Images/heart_logo.png")
+pygame.display.set_icon(icon)
+clock = pygame.time.Clock()
+
+# 
+
+game = Game(screen)
+
+# Main Loop ของ Pygame
+while True:
+    
+    dt = clock.tick(FPS) / 1000.0  # คำนวณ dt
+   
+    if game.running:
+
+
+        screen.fill((0, 0, 0)) # สีดำ
+        def update():
+            game.update(dt)
+
+        if os.path.exists("debug.txt"):
+            try:
+                update()
+            except Exception as e:
+                print(f"An error occurred: {e}")  # Print the error message
+                game.running = False
+                break
+        else:
+            update()
+
+        # ui_manager.draw_ui()
+        pygame.display.update()
+        
+        for event in pygame.event.get():
+        # เมื่อกดออก จะเด้งออก สรุป
+            if event.type == pygame.QUIT:
+                game.running = False
+                pygame.quit()
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+                game.UI_group.update_mouse_position(mouse_x, mouse_y)
+        clock.tick(FPS) # ทำให้ Delay ด้วย FPS
