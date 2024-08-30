@@ -31,9 +31,7 @@ class UIManager:
         # self._menu_index = 0
         # self.player_tween_completed = False
         self.selection_name = ["spell", "act", "bag", "mercy"]
-        self.selection_menus = {"items" : [self._spell, self._act, self._item, self._mercy],
-                               "length" : 0,
-                               "current_selection" : 0}
+        self.selection_menus = {"items" : [self._spell, self._act, self._item, self._mercy]}
         # Position Debug Text
         self.position_txt = self.small_font.render("(0, 0)", True, (255, 255, 255))
         self.position_text_rect = self.position_txt.get_rect(topleft=(55, 55))
@@ -48,6 +46,7 @@ class UIManager:
         self.is_selected_item = self.player_state["is_selected_item"]
         self.is_player_tween = self.player_state["player_tween_completed"]
         self.update_layout()
+        self.game_instance.UI_info = self.info()
         
 
         # Draw lines and player group 
@@ -151,19 +150,3 @@ class UIManager:
         self.position_txt = self.small_battle_font.render(f"({mouse_x}, {mouse_y})", True, (255, 255, 255))
         self.position_text_rect.center = (mouse_x, mouse_y)
 
-    def set_position_menu(self):
-        self.menu_index = self.item_selection
-        self.selection_menu["items"] = self.UI_group.info()["items_menu"]
-        item_of_menu = self.selection_menu["items"][self.menu_index]
-        self.selection_menu["length"] = len(item_of_menu)
-        self.selection_menu["current_selection"] = self.player.selected_index
-        # print(self.selection_menu["length"])
-        # print(item_of_menu[n][1]) got rect
-        rect = item_of_menu[self.player.selected_index][1]
-        self.player.move(rect.x - 4 , 7 + rect.y)
-
-    def reset_menu(self):
-        self.menu_index = 0
-        self.selection_menu = {"items" : [],
-                            "length" : 0,
-                            "current_selection" : 0}

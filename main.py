@@ -34,7 +34,7 @@ def handle_events():
             pygame.quit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = event.pos
-            game.UI_group.update_mouse_position(mouse_x, mouse_y)
+            game.UI.update_mouse_position(mouse_x, mouse_y)
 
 # Main game loop
 while game.running:

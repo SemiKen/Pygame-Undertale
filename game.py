@@ -27,15 +27,6 @@ class Game:
     def _initialize_game_state(self):
         """Initialize the game's state-related attributes."""
         self._running = True
-        # self._menu_index = 0
-        # self._item_selection = 0
-
-        # self.player_tween_completed = False
-        # self.selection_name = ["spell", "act", "bag", "mercy"]
-
-        # self.selection_menu = {"items" : [],
-        #                        "length" : 0,
-        #                        "current_selection" : 0}
         
 
     def _initialize_player(self):
@@ -65,8 +56,6 @@ class Game:
         self.UI.update(dt)
         # self.UI.update_mouse_position(self.player_group.sprite.rect.x, self.player_group.sprite.rect.y)
 
-  
-
     def setting_object(self, gameObject: GameObject):    
         gameObject.draw(self.surface)
         if gameObject.check_collision(self.player):
@@ -92,30 +81,6 @@ class Game:
                 print("Game is now stopping.")
         else:
             raise ValueError("running must be a boolean")
-    @property
-    def menu_index(self):
-        return self._menu_index
-    
-    @menu_index.setter
-    def menu_index(self, value):
-        if 0 <= value < len(self.selection_name):
-            self._menu_index = value
-        else:
-            raise ValueError("menu_index must be within valid range")
-
-
-    @property
-    def item_selection(self):
-        return self._item_selection
-
-    # Setter สำหรับ _item_selection
-    @item_selection.setter
-    def item_selection(self, value):
-        if isinstance(value, int):  # ตรวจสอบเงื่อนไขของค่าที่กำหนด
-            self._item_selection = value
-            self._item_selection %= len(self.selection_name)
-        else:
-            raise ValueError("item_selection must be a non-negative integer")
         
     
         

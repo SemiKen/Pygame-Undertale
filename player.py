@@ -21,7 +21,7 @@ class Player(pygame.sprite.Sprite):
         # Player Modes and Selection
         self._player_state = {
             "current_mode" : "normal",
-            "mode_selection_index" : 0,
+            "mode_selection_index" : 1,
             "menu_selection_index" : 0,
             "item_selection_index" : 0,
             "is_selected_item" : False,
@@ -106,32 +106,31 @@ class Player(pygame.sprite.Sprite):
     # sub-method ของ get_user_input 
     # ตอนเลือก Item
     def handle_item_selection(self, keys):
-        items_amount = self.game_instance.selection_menu["length"]
+        items_amount = len(self.game_instance.UI_info["items_menus"][self._player_state["menu_selection_index"]])
         num_columns = 3
-        selected_index = self._player_state["item_selection_index"]
 
         if keys[pygame.K_LEFT] and self.wait(1/4):
-            if selected_index - num_columns >= 0:
-                selected_index -= num_columns
+            if self._player_state["item_selection_index"] - num_columns >= 0:
+                self._player_state["item_selection_index"] -= num_columns
 
         elif keys[pygame.K_RIGHT] and self.wait(1/4):
-            if selected_index + num_columns < items_amount:
-                selected_index += num_columns
+            if self._player_state["item_selection_index"] + num_columns < items_amount:
+                self._player_state["item_selection_index"] += num_columns
 
         elif keys[pygame.K_UP] and self.wait(1/4):
-            if selected_index % num_columns > 0:
-                selected_index -= 1
+            if self._player_state["item_selection_index"] % num_columns > 0:
+                self._player_state["item_selection_index"] -= 1
 
         elif keys[pygame.K_DOWN] and self.wait(1/4):
-            if (selected_index % num_columns) < (num_columns - 1):
-                if selected_index < items_amount-1:
-                    selected_index += 1
+            if (self._player_state["item_selection_index"] % num_columns) < (num_columns - 1):
+                if self._player_state["item_selection_index"] < items_amount-1:
+                    self._player_state["item_selection_index"] += 1
 
-        # self.game_instance.set_position_menu()
+        self.set_position_menu()
 
         if keys[pygame.K_ESCAPE] and self.wait(0.25):
             # self.game_instance.reset_menu()
-            selected_index = 0
+            self._player_state["item_selection_index"] = 0
             self._player_state["is_selected_item"] = False
             self.wait(0.1, self.change_index(0))
 
@@ -203,7 +202,14 @@ class Player(pygame.sprite.Sprite):
             if not self._player_state["is_selected_item"]:
                 self.move(87.5 + (172 * self._player_state["menu_selection_index"]), 529)
         else:
+            pass
 
+    def set_position_menu(self):
+        current_menu = self.game_instance.UI_info["items_menus"][self._player_state["menu_selection_index"]]
+        
+        rect = current_menu[self._player_state["item_selection_index"]][1]
+        self.move(rect.x - 4 , 7 + rect.y)
+    
     # Other Method
     def load_player_image(self):
         if self._player_state["current_mode"] == "normal" or self._player_state["current_mode"] == "selection":
