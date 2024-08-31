@@ -39,16 +39,25 @@ class Player(pygame.sprite.Sprite):
         self.jump_force = -10
         self.velocity_y = 0
         self.on_ground = False
+        self.image_alpha = 255
+        self.image_change = False
 
         # Load Initial Assets and Set Position
         self.previous_mode = None
-        self.load_player_image()
+        self.set_player_image()
         self.set_initial_position()
 
         # Tweening Properties
         self.tween_speed = 0.25
         self.target_x = 87.5
         self.target_y = 529
+        self.target_alpha = 0
+        self.tween_alpha_speed = 50
+
+        # Event
+        self.event_info = {"events" : [],
+                           "callback" : [],
+                           "args" : []}
 
         # Time Manager
         self.last_key_press_time = time.time()
@@ -57,6 +66,8 @@ class Player(pygame.sprite.Sprite):
         self.get_user_input() # 1
         self.constrain_movement(line_group) # 2
         self.update_tweening() # 3
+        if self.image_change == True:
+            self.tween_alpha(self.target_alpha)
 
 
 
@@ -111,8 +122,6 @@ class Player(pygame.sprite.Sprite):
             if math.floor(self.rect.x / 40) == math.floor(self.target_x / 40):
                 self._player_state["player_tween_completed"] = True
     
-
-
     # sub-method ของ get_user_input 
     # ตอนเลือก Item
     def handle_item_selection(self, keys):
@@ -153,7 +162,6 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_RIGHT] and self.wait(0.25): self.change_index(1)
         if keys[pygame.K_LEFT] and self.wait(0.25): self.change_index(-1)
         
-
     # ตอน Movement (State : Normal หรือ Blue)
     def handle_movement(self, keys):
         def handle_gravity_jump():
@@ -172,9 +180,42 @@ class Player(pygame.sprite.Sprite):
         if keys[pygame.K_DOWN] and self._player_state["current_mode"] != "gravity":
             self.rect.y += self.speed
 
-
-
     # เครื่องมือ Method ที่ได้ใช้
+    def delay(self, second=2.0, callback=None, callback_args=None):
+
+        
+        # เก็บข้อมูล callback และ arguments เพื่อใช้งานในการจัดการเหตุการณ์
+        for i in range(0, len(self.event_info["events"])+1):
+            if i not in self.event_info["events"]:
+                # ตั้งค่าตัวจับเวลา
+                pygame.time.set_timer(pygame.USEREVENT + i, math.floor(second * 1000))
+                self.event_info["events"].insert(i, i)
+                self.event_info["callback"].insert(i, callback)
+                self.event_info["args"].insert(i, callback_args)
+                
+
+                break
+
+    def handle_event(self, event):
+        # ตรวจสอบเหตุการณ์จากตัวจับเวลา
+        for i in self.event_info["events"]:
+            if event.type == pygame.USEREVENT + i:
+                index = self.event_info["events"].index(i)  # Get the correct index
+                
+                if self.event_info["callback"][index] is not None:
+                    if self.event_info["args"][index] is not None:
+                        self.event_info["callback"][index](*self.event_info["args"][index])
+                    else:
+                        self.event_info["callback"][index]()
+                
+                # Remove the event and corresponding callback and args
+                self.event_info["events"].pop(index)
+                self.event_info["callback"].pop(index)
+                self.event_info["args"].pop(index)
+                
+                # Stop the timer for this event
+                pygame.time.set_timer(pygame.USEREVENT + i, 0)
+
     def wait(self, timeset=1, callback=None, callback_args=None):
         current_time = time.time()
         if current_time - self.last_key_press_time > timeset:
@@ -200,7 +241,7 @@ class Player(pygame.sprite.Sprite):
             self.sound.play("bell")
 
         if self._player_state["current_mode"] != self.previous_mode:
-            self.load_player_image()
+            self.set_player_image()
             self.previous_mode = self._player_state["current_mode"]
 
         print(self._player_state["mode_selection_index"])
@@ -219,35 +260,68 @@ class Player(pygame.sprite.Sprite):
        
     
     # Other Method
-    def load_player_image(self):
+    def tween_alpha(self, target_alpha):
+        if self.image_alpha > target_alpha:
+            self.image_alpha -= self.tween_alpha_speed
+            if self.image_alpha < target_alpha:
+                self.image_alpha = target_alpha
+        elif self.image_alpha < target_alpha:
+            self.image_alpha += self.tween_alpha_speed
+            if self.image_alpha > target_alpha:
+                self.image_alpha = target_alpha
+        
+        if self.wait(1/16):
+            self.image.set_alpha(self.image_alpha)
+
+    def set_player_image(self):
         if self._player_state["current_mode"] == "normal" or self._player_state["current_mode"] == "selection":
             image_path = "Assets/player.png"
         elif self._player_state["current_mode"] == "gravity":
             image_path = "Assets/player_blue.png"
 
+
         self.pre_image = pygame.image.load(image_path)
-        self.image = pygame.transform.scale(self.pre_image, (20, 20))
+        self.image = pygame.transform.scale(self.pre_image, (20, 20)).convert_alpha()
+        self.image.set_alpha(self.image_alpha)
     
     def set_initial_position(self):
         # ตั้งค่าตำแหน่งเริ่มต้นของตัวละครผู้เล่น
         self.rect = self.image.get_rect(midbottom=(self.screen_width // 2, self.screen_height // 1.5))
 
     def take_damage(self, damage=0):
-        if not self._damage_taken:
-            # ลด HP หรือจัดการความเสียหายที่ได้รับ
-            self._damage_taken = True
-            self.sound.play("hurt")
-            # ตั้งเวลาเพื่อเปลี่ยน `_damage_taken` กลับเป็น False หลังจาก 2 วินาที
-            pygame.time.set_timer(pygame.USEREVENT + 1, 2000)
-
-    def handle_event(self, event):
-        # ตรวจสอบเหตุการณ์เมื่อครบเวลา 2 วินาที
-        if event.type == pygame.USEREVENT + 1:
+       if not self._damage_taken:
+        def reset():
+            self.tween_alpha_speed = 125
             self._damage_taken = False
-            print(False)
-            # หยุดตัวจับเวลาหลังจากที่มันถูกใช้งาน
-            pygame.time.set_timer(pygame.USEREVENT + 1, 0)
+            self.image_change = False
 
+        def create_show_callback(speed, alpha):
+            def show():
+                self.tween_alpha_speed = speed
+                self.target_alpha = alpha
+            return show
+
+        # ลด HP หรือจัดการความเสียหายที่ได้รับ
+        self._damage_taken = True
+        self.sound.play("hurt")
+
+        # เริ่มกระพริบภาพด้วยความเร็วจากเร็วไปช้า
+        self.tween_alpha_speed = 85
+        self.image_change = True
+        
+        delay_times = [0.125, 0.25, 0.5, 0.75, 0.9]  # ช่วงเวลา delay
+        speeds = [75, 60, 40, 32, 25]  # ความเร็วในการ tween
+        alphas = [255, 0, 255, 0, 255]  # ค่า alpha ของภาพ
+
+        for i in range(len(delay_times)):
+            callback = create_show_callback(speeds[i], alphas[i])
+            self.delay(delay_times[i], callback)
+        
+        # ตั้งเวลาเพื่อเปลี่ยน `_damage_taken` กลับเป็น False หลังจาก 2 วินาที
+        self.delay(1.5, reset)
+
+                
+    
     def info(self):
         return {
             "player_status": self._status,
