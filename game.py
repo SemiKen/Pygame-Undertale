@@ -60,7 +60,7 @@ class Game:
     def setting_object(self, gameObject: GameObject):    
         gameObject.draw(self.surface)
         if gameObject.check_collision(self.player):
-            self.player.take_damage()
+            self.player.take_damage(gameObject.damage)
 
     def handle_event(self, event):
         self.player.handle_event(event)

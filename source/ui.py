@@ -46,6 +46,7 @@ class UIManager:
         self.is_selected_item = self.player_state["is_selected_item"]
         self.is_player_tween = self.player_state["player_tween_completed"]
         self.update_layout()
+        self.update_player_info()
         self.game_instance.UI_info = self.info()
         
 
@@ -54,7 +55,9 @@ class UIManager:
         for sprite in self.line_group:
             sprite.show(self.screen)
         self.game_instance.player_group.draw(self.screen)
-    
+
+        self.draw_health_bar(self.player_status[2], self.player_status[3], 75)
+
     def update_layout(self):
         
         # Draw player selection and information
@@ -104,7 +107,6 @@ class UIManager:
 
 
    # Method เริ่มต้น # --------------------------------
-
     def update_player_info(self):
         # Render player info text
         self.name_txt = self.battle_font.render(self.player_status[0], True, (255, 255, 255))
@@ -116,8 +118,8 @@ class UIManager:
         self.hp_label = self.small_battle_font.render("HP", True, (255, 255, 255))
         self.hp_label_rect = self.hp_label.get_rect(bottomleft=(315, 495))
 
-        self.hp_txt = self.battle_font.render(f"{self.player_status[2]} / {self.player_status[3]}", True, (255, 255, 255))
-        self.hp_text_rect = self.hp_txt.get_rect(bottomleft=(425, 500))
+        self.hp_txt = self.battle_font.render(f"{self.player_status[3]} / {self.player_status[2]}", True, (255, 255, 255))
+        self.hp_text_rect = self.hp_txt.get_rect(bottomleft=(435, 497))
 
         def set_column(x, y, i):
             # Calculate offset based on the index `i`
@@ -139,6 +141,24 @@ class UIManager:
         for start_pos, end_pos, name in boundaries:
             self.line_group.add(Line(start_pos, end_pos, name=name))
 
+    def draw_health_bar(self, max_hp, current_hp, bar_width=200, bar_height=20):
+        # สีสำหรับ health bar
+        full_hp_color = (255, 0, 0)  # สีแดง สำหรับ HP ที่เต็ม
+        current_hp_color = (255, 255, 0)  # สีเหลือง สำหรับ HP ที่เหลืออยู่
+        
+        x, y = 350, 480
+        # สร้าง rect สำหรับ HP ที่เต็ม
+        full_hp_rect = pygame.Rect(x, y, bar_width, bar_height)
+        
+        # คำนวณความกว้างของ rect สำหรับ HP ที่เหลืออยู่
+        current_hp_width = int((current_hp / max_hp) * bar_width)
+        current_hp_rect = pygame.Rect(x, y, current_hp_width, bar_height)
+        
+        # วาด HP ที่เต็ม
+        pygame.draw.rect(self.screen, full_hp_color, full_hp_rect)
+        
+        # วาด HP ที่เหลืออยู่ทับลงไป
+        pygame.draw.rect(self.screen, current_hp_color, current_hp_rect)
     # Method อื่นๆ # --------------------------------
     def info(self):
         return {

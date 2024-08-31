@@ -304,13 +304,16 @@ class Player(pygame.sprite.Sprite):
         # ลด HP หรือจัดการความเสียหายที่ได้รับ
         self._damage_taken = True
         self.sound.play("hurt")
+        self._status[3] -= damage
+        if self._status[3] <= 0:
+            self._status[3] = 0
 
         # เริ่มกระพริบภาพด้วยความเร็วจากเร็วไปช้า
         self.tween_alpha_speed = 85
         self.image_change = True
         
         delay_times = [0.125, 0.25, 0.5, 0.75, 0.9]  # ช่วงเวลา delay
-        speeds = [75, 60, 40, 32, 25]  # ความเร็วในการ tween
+        speeds = [125, 85, 40, 32, 25]  # ความเร็วในการ tween
         alphas = [255, 0, 255, 0, 255]  # ค่า alpha ของภาพ
 
         for i in range(len(delay_times)):
