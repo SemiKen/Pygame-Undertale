@@ -2,7 +2,7 @@ import pygame
 from player import Player
 from object import *
 from source.ui import UIManager
-from source.audio  import SoundManager, MusicManager
+from source.audio import MusicManager
 
 
 
@@ -10,9 +10,9 @@ class Game:
     def __init__(self, screen):
         self._initialize_screen(screen)
         self._initialize_game_state()
-        self._initialize_player()
         self._initialize_audio()
         self._initialize_object()
+        self._initialize_player()
         self._initialize_ui(screen)
 
     def _initialize_screen(self, screen):
@@ -39,8 +39,9 @@ class Game:
     def _initialize_audio(self):
         """Load and initialize the game's audio."""
         self.music = MusicManager()
-        self.sound = SoundManager()
-        self.music.load_music("Music/sukuya_theme.mp3")
+        
+
+        # self.music.load_music("Music/sukuya_theme.mp3")
         # Uncomment to start playing the music immediately
         # self.music.play_music()
 
@@ -63,7 +64,7 @@ class Game:
 
     def handle_event(self, event):
         self.player.handle_event(event)
-
+        
 
     # Getter , Setter
     @property

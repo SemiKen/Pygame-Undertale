@@ -2,6 +2,7 @@ import pygame
 # import random
 import math
 import time
+from source.audio import SoundManager
 
 class Player(pygame.sprite.Sprite):
 
@@ -12,6 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.game_instance = game_instance
+        self.sound = SoundManager()
 
         # Player State
         self._status = [name, level, hp_current, hp_max]
@@ -63,8 +65,8 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
 
         if self._started == False:
-            self.switch_mode()
             self._started = True
+            self.switch_mode()
             self.change_index(0)
 
         if self._player_state["is_selected_item"]:
@@ -77,7 +79,7 @@ class Player(pygame.sprite.Sprite):
             self.handle_movement(keys)
 
         if keys[pygame.K_e] and self.wait():
-            self.switch_mode()
+            self.switch_mode(1)
 
     def constrain_movement(self, line_group):
         collisions = pygame.sprite.spritecollide(self, line_group, False)
@@ -144,7 +146,7 @@ class Player(pygame.sprite.Sprite):
     # ตอน เลือก Menu
     def handle_selection_mode(self, keys):
         if keys[pygame.K_SPACE] and self.wait(0.25):
-            self.game_instance.sound.play_sound("select")
+            self.sound.play("select")
             self.change_index(type_mode=1)
             self._player_state["is_selected_item"] = True
 
@@ -194,7 +196,8 @@ class Player(pygame.sprite.Sprite):
         modes = ['normal', 'gravity', 'selection']
         self._player_state["mode_selection_index"] = (self._player_state["mode_selection_index"] + value) % len(modes)
         self._player_state["current_mode"] = modes[self._player_state["mode_selection_index"]]
-        
+        if self._player_state["mode_selection_index"] == 1:
+            self.sound.play("bell")
 
         if self._player_state["current_mode"] != self.previous_mode:
             self.load_player_image()
@@ -233,7 +236,7 @@ class Player(pygame.sprite.Sprite):
         if not self._damage_taken:
             # ลด HP หรือจัดการความเสียหายที่ได้รับ
             self._damage_taken = True
-            print(True)
+            self.sound.play("hurt")
             # ตั้งเวลาเพื่อเปลี่ยน `_damage_taken` กลับเป็น False หลังจาก 2 วินาที
             pygame.time.set_timer(pygame.USEREVENT + 1, 2000)
 
