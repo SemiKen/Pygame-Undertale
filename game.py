@@ -20,9 +20,20 @@ class Game:
         self.surface = screen
         self.screen_width = screen.get_width()
         self.screen_height = screen.get_height()
+        self.debug = True
 
     def _initialize_object(self):
+        self.objects = []
+        self.sakuya = Character((self.screen_width // 2) - 75, (self.screen_height // 2) - 225 , 95*1.5, 151*1.5)
+        self.sakuya.set_image("Images/characters/sakuya.png")
+        
+        # สร้าง rect ที่ครอบคลุมภาพ และตั้งค่าตำแหน่งเริ่มต้น
         self.knife = Knife(600, 322, 320//4, 100//4, 90, 5)
+        self.debug_UI = Debug_UI(self.screen_width//2, -400, 123*2.5, 147*2.5, 0, "Images/menu_panel.png")
+        self.debug_UI.target_pos = self.surface.get_rect().center
+        self.objects.append(self.sakuya)
+        self.objects.append(self.knife)
+        self.objects.append(self.debug_UI)
 
     def _initialize_game_state(self):
         """Initialize the game's state-related attributes."""
@@ -53,14 +64,16 @@ class Game:
 
     def update(self, dt):
         self.player_group.update(self.UI.line_group)
-        self.setting_object(self.knife)
         self.UI.update(dt)
+        self.setting_object(self.objects)
         # self.UI.update_mouse_position(self.player_group.sprite.rect.x, self.player_group.sprite.rect.y)
 
-    def setting_object(self, gameObject: GameObject):    
-        gameObject.draw(self.surface)
-        if gameObject.check_collision(self.player):
-            self.player.take_damage(gameObject.damage)
+    def setting_object(self, gameObject_array):  
+        for gameObject in gameObject_array:  
+            gameObject.draw(self.surface)
+            gameObject.update()
+            if gameObject.check_collision(self.player):
+                self.player.take_damage(gameObject.damage)
 
     def handle_event(self, event):
         self.player.handle_event(event)

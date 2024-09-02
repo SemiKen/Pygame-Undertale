@@ -28,8 +28,10 @@ class Player(pygame.sprite.Sprite):
             "menu_selection_index" : 0,
             "item_selection_index" : 0,
             "is_selected_item" : False,
+            "is_paused": False,
+            "pause_menu": [],
             "player_tween_completed" : False,
-        } # self._player_state["menu_selection_index"]
+        } # self._player_state["is_selected_item"]
 
         # Item Management
         self._player_items = ["Rice Balls", "Pancakes", "Soup", "Dango", "Bento Boxes"]
@@ -64,6 +66,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, line_group):
         self.get_user_input() # 1
+        if self._player_state['is_paused']: return
         self.constrain_movement(line_group) # 2
         self.update_tweening() # 3
         if self.image_change == True:
@@ -74,6 +77,22 @@ class Player(pygame.sprite.Sprite):
     # Method หลักๆ ที่ใช้งาน
     def get_user_input(self):
         keys = pygame.key.get_pressed()
+        def pause():
+            if keys[pygame.K_q] and self.game_instance.debug and self.wait(1/6):
+                self.pause_game()
+            if self.game_instance.debug_UI.is_reached == True and self.game_instance.debug_UI.start_tween:
+                self.game_instance.debug_UI.is_enabled = not self.game_instance.debug_UI.is_enabled
+                self.game_instance.debug_UI.start_tween = False
+                self.game_instance.debug_UI.is_reached = False
+                if not self.game_instance.debug_UI.is_enabled:
+                    self._player_state['is_paused'] = False
+                print(self._player_state['is_paused'])
+
+        if not self._player_state['is_paused']:
+            pause()
+        else:
+            pause()
+            return
 
         if self._started == False:
             self._started = True
@@ -91,6 +110,8 @@ class Player(pygame.sprite.Sprite):
 
         if keys[pygame.K_e] and self.wait():
             self.switch_mode(1)
+
+        
 
     def constrain_movement(self, line_group):
         collisions = pygame.sprite.spritecollide(self, line_group, False)
@@ -229,7 +250,8 @@ class Player(pygame.sprite.Sprite):
         return False
 
     def move(self, x, y):
-        self._player_state["player_tween_completed"] = False
+        if not self._player_state["is_selected_item"]:
+            self._player_state["player_tween_completed"] = False
         self.target_x = x
         self.target_y = y
     
@@ -258,6 +280,13 @@ class Player(pygame.sprite.Sprite):
             rect = current_menu[self._player_state["item_selection_index"]][1]
             self.move(rect.x - 4 , 7 + rect.y)
        
+    def pause_game(self):
+        if self.game_instance.debug_UI.start_tween == True: return
+        self._player_state['is_paused'] = not self._player_state['is_paused']
+        if self._player_state['is_paused']:
+            self.is_reached = False
+            self.game_instance.debug_UI.start_tween = True
+        pass
     
     # Other Method
     def tween_alpha(self, target_alpha):
@@ -312,8 +341,8 @@ class Player(pygame.sprite.Sprite):
         self.tween_alpha_speed = 85
         self.image_change = True
         
-        delay_times = [0.125, 0.25, 0.5, 0.75, 0.9]  # ช่วงเวลา delay
-        speeds = [125, 85, 40, 32, 25]  # ความเร็วในการ tween
+        delay_times = [0.05, 0.125, 0.25, 0.5, 0.75]  # ช่วงเวลา delay
+        speeds = [125, 90, 60, 32, 25]  # ความเร็วในการ tween
         alphas = [255, 0, 255, 0, 255]  # ค่า alpha ของภาพ
 
         for i in range(len(delay_times)):
