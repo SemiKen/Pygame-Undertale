@@ -1,0 +1,16 @@
+1. Background - กำหนดพื้นที่ที่เป็นพื้นหลังสีดำพร้อม grid สีเขียว.
+2. Enemy Sprite - แยก sprite ของ Froggit ซึ่งเป็นรูปภาพของศัตรูที่อยู่บนหน้าจอ.
+3. Dialogue Box - กรอบข้อความสีดำที่มีข้อความคำบรรยายการกระทำของศัตรู.
+4. Player Information - ส่วนข้อมูล LV และ HP ของผู้เล่นที่อยู่ด้านล่างซ้าย.
+5. Command Menu - ปุ่มคำสั่ง 4 ปุ่มที่ผู้เล่นสามารถเลือกใช้ในการต่อสู้.
+
+1. Layout [Done]
+2. Player [Maybe Done]
+3. Collisions
+3. Dialogue
+
+
+
+
+            # print(mouse_x, ",", mouse_y)
+            
